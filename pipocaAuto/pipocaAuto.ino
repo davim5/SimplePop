@@ -29,7 +29,7 @@ int pinoSensor = 12;
 
 char str[10];
 
-  
+
 
 void setup() {
   myservo.attach(13);  // Servo ligado no pin 13
@@ -72,63 +72,70 @@ void loop() {
   //PARAR HELICES
   //    } while (START == true);
 
-  contador = 0;
-  TI = millis();
-  //    OUVIR PIPOCADA
-  Serial.print("TI: ");
-  Serial.println(TI);
-
-
   do {
 
-    sprintf(str, "%d", contador);
-    client.publish("/pipoca/mic", str);
+    contador = 0;
+    TI = millis();
+    //    OUVIR PIPOCADA
+    Serial.print("TI: ");
+    Serial.println(TI);
 
-    for (pos = 0; pos <= 180; pos += 1) {
-      Serial.println(pos);
-      myservo.write(pos);
-      delay(20);
-      if (digitalRead(pinoSensor) == HIGH) {
-        contador++;
-        TD = millis();
+
+    do {
+
+      sprintf(str, "%d", contador);
+      client.publish("/pipoca/mic", str);
+
+      for (pos = 0; pos <= 180; pos += 1) {
+        Serial.println(pos);
+        myservo.write(pos);
+        delay(20);
+        if (digitalRead(pinoSensor) == HIGH) {
+          contador++;
+          TD = millis();
+        }
+        else {
+          TD = millis();
+        }
       }
-      else {
-        TD = millis();
+      sprintf(str, "%d", contador);
+      client.publish("/pipoca/mic", str);
+
+      for (pos = 180; pos >= 0; pos -= 1) {
+        Serial.println(pos);
+        myservo.write(pos);
+        delay(20);
+        if (digitalRead(pinoSensor) == HIGH) {
+          contador++;
+          TD = millis();
+        }
+        else {
+          TD = millis();
+        }
       }
+
+      sprintf(str, "%d", contador);
+      client.publish("/pipoca/mic", str);
+
+      Serial.print("TD: ");
+      Serial.println(TD);
+
+      Serial.print("Contador chegou em: ");
+      Serial.println(contador);
+
+    } while ((TD - TI) < 10000);
+
+    if (contador > 10) {
+      Serial.println("Hora da pipoca! :)");
     }
-    sprintf(str, "%d", contador);
-    client.publish("/pipoca/mic", str);
-    
-    for (pos = 180; pos >= 0; pos -= 1) {
-      Serial.println(pos);
-      myservo.write(pos);
-      delay(20);
-      if (digitalRead(pinoSensor) == HIGH) {
-        contador++;
-        TD = millis();
-      }
-      else {
-        TD = millis();
-      }
+    else {
+      Serial.println("Pipoca ainda nao esta pronta! :(");
     }
 
-    sprintf(str, "%d", contador);
-    client.publish("/pipoca/mic", str);
-    
-    Serial.print("TD: ");
-    Serial.println(TD);
 
-    Serial.print("Contador chegou em: ");
-    Serial.println(contador);
+  } while (contador < 10);
 
-  } while ((TD - TI) < 10000);
 
-  if (contador > 10) {
-    Serial.println("Hora da pipoca! :)");
-  }
-  else {
-    Serial.println("Pipoca ainda nao esta pronta! :(");
-  }
 
 
 }
